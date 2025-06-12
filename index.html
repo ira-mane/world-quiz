@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Around the World Quiz – Find Your Next Destination</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e0f7fa, #fff);
+      padding: 2rem; text-align: center; color: #333;
+    }
+    .quiz-container {
+      max-width: 600px; margin: auto;
+      background: white; border-radius:15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    .question { margin: 2rem 0; }
+    .options button {
+      background: #0288d1; color: white; padding: .75rem 1.5rem;
+      margin: .5rem; border: none; border-radius:10px;
+      cursor: pointer; transition: background .3s;
+    }
+    .options button:hover { background: #0277bd; }
+    .result { font-size:1.5rem; margin-top:2rem; padding:1rem;
+      border-top:2px dashed #ccc;
+    }
+    .ticket {
+      margin-top:2rem; border:2px dashed #0288d1;
+      padding:1rem; border-radius:10px; background:#f1fafe;
+      max-width:400px; margin:auto; text-align:left;
+      font-family:monospace;
+    }
+    #progress { font-weight:bold; margin-bottom:1rem; }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Around the World</h1>
+    <h2>🌍 Discover Your Next Destination in 5 Questions!</h2>
+    <div id="progress"></div>
+    <div id="quiz"></div>
+    <div class="result" id="result"></div>
+    <div class="ticket" id="ticket" style="display:none"></div>
+  </div>
+
+  <script>
+    // 100+ example destinations (expandable)
+    const locations = {
+      italy: "🇮🇹 Italy – Pasta, canals, art & romance!",
+      japan: "🇯🇵 Japan – Technology meets tradition.",
+      australia: "🇦🇺 Australia – Kangaroos, beaches, and reef.",
+      egypt: "🇪🇬 Egypt – Pyramids & ancient history.",
+      brazil: "🇧🇷 Brazil – Rio, samba, rainforest.",
+      canada: "🇨🇦 Canada – Mountains, lakes & friendly cities.",
+      greece: "🇬🇷 Greece – Islands, ruins, Mediterranean.",
+      thailand: "🇹🇭 Thailand – Street food & tropical islands.",
+      nepal: "🇳🇵 Nepal – Himalayas & trekking adventures.",
+      new_zealand: "🇳🇿 New Zealand – LOTR landscapes & thrill.",
+      usa: "🇺🇸 USA – Cities, canyons & coastlines.",
+      switzerland: "🇨🇭 Switzerland – Alps & chocolates.",
+      turkey: "🇹🇷 Turkey – Bazaars, mosques & ancient sites.",
+      vietnam: "🇻🇳 Vietnam – Pho, countryside & culture.",
+      morocco: "🇲🇦 Morocco – Sahara, spice markets & kasbahs.",
+      peru: "🇵🇪 Peru – Machu Picchu & Incan trails.",
+      lebanon: "🇱🇧 Lebanon – Mediterranean & mountains.",
+      iceland: "🇮🇸 Iceland – Glaciers, geysers & hot springs.",
+      ireland: "🇮🇪 Ireland – Green landscapes & castles.",
+      spain: "🇪🇸 Spain – Tapas, flamenco & sunshine.",
+      portugal: "🇵🇹 Portugal – Coastal towns & port wine.",
+      croatia: "🇭🇷 Croatia – Adriatic islands & history.",
+      morocco: "🇲🇦 Morocco – Sahara, spice markets.",
+      argentina: "🇦🇷 Argentina – Tango, pampas & wine.",
+      south_africa: "🇿🇦 South Africa – Safari & diverse terrain.",
+      indonesia: "🇮🇩 Indonesia – Volcanoes, temples & reefs.",
+      malaysia: "🇲🇾 Malaysia – Jungle, cities & cuisine.",
+      singapore: "🇸🇬 Singapore – Gardens, culture & efficiency.",
+      russia: "🇷🇺 Russia – Moscow, history & art.",
+      finland: "🇫🇮 Finland – Lakes, saunas & northern lights.",
+      sweden: "🇸🇪 Sweden – Design, archipelago & fika.",
+      norway: "🇳🇴 Norway – Fjords & midnight sun.",
+      iceland: "🇮🇸 Iceland – Geysers & glacier lagoons.",
+      poland: "🇵🇱 Poland – Medieval towns & pierogi.",
+      czech_republic: "🇨🇿 Czechia – Prague, beer & castles.",
+      austria: "🇦🇹 Austria – Alps, music & coffeehouses.",
+      hungary: "🇭🇺 Hungary – Budapest, baths & paprika.",
+      slovakia: "🇸🇰 Slovakia – Mountains & folk villages.",
+      slovenia: "🇸🇮 Slovenia – Lakes, caves & vineyards.",
+      croatia: "🇭🇷 Croatia – Dubrovnik & coastal charms.",
+      bosnia: "🇧🇦 Bosnia – Historic Sarajevo & waterfalls.",
+      serbia: "🇷🇸 Serbia – Belgrade nightlife & culture.",
+      montenegro: "🇲🇪 Montenegro – Adriatic fjords & fortresses.",
+      romania: "🇷🇴 Romania – Transylvania & medieval towns.",
+      bulgaria: "🇧🇬 Bulgaria – Black Sea & mountain monasteries.",
+      ukraine: "🇺🇦 Ukraine – History, art & villages.",
+      kazakhstan: "🇰🇿 Kazakhstan – Steppes & modern cities.",
+      kyrgyzstan: "🇰🇬 Kyrgyzstan – Mountains & yurt life.",
+      tajikistan: "🇹🇯 Tajikistan – Pamirs & adventure.",
+      uzbekistan: "🇺🇿 Uzbekistan – Silk Road cities.",
+      iran: "🇮🇷 Iran – Persian architecture & bazaars.",
+      armenia: "🇦🇲 Armenia – Ancient monasteries & mountains.",
+      georgia: "🇬🇪 Georgia – Wine, mountains & UNESCO sites.",
+      azerbaijan: "🇦🇿 Azerbaijan – Caspian culture & flame towers.",
+      cyprus: "🇨🇾 Cyprus – Beaches & ancient history.",
+      malta: "🇲🇹 Malta – Mediterranean fortresses & temples.",
+      egypt: "🇪🇬 Egypt – Timeless pyramids and Nile cruises.",
+      kenya: "🇰🇪 Kenya – Safari and Masai Mara.",
+      tanzania: "🇹🇿 Tanzania – Serengeti and Kilimanjaro.",
+      uganda: "🇺🇬 Uganda – Gorilla trekking.",
+      costa_rica: "🇨🇷 Costa Rica – Rainforests & volcanoes.",
+      panama: "🇵🇦 Panama – Canal & beaches.",
+      mexico: "🇲🇽 Mexico – Mayan ruins & street food.",
+      cuba: "🇨🇺 Cuba – Vintage cars & salsa.",
+      jamaica: "🇯🇲 Jamaica – Reggae, beaches & mountains.",
+      dominican_republic: "🇩🇴 DR – Resorts & culture.",
+      haiti: "🇭🇹 Haiti – Art & Caribbean.",
+      guatemala: "🇬🇹 Guatemala – Volcanoes & Mayan sites.",
+      belize: "🇧🇿 Belize – Reef & jungle.",
+      honduras: "🇭🇳 Honduras – Mayan ruins & diving.",
+      nicaragua: "🇳🇮 Nicaragua – Volcanoes & lakes.",
+      el_salvador: "🇸🇻 El Salvador – Surf & volcanos.",
+      costa_rica: "🇨🇷 Costa Rica – Biodiverse and green.",
+      colombia: "🇨🇴 Colombia – Andes, coffee & Caribbean.",
+      venezuela: "🇻🇪 Venezuela – Angel Falls & beaches.",
+      peruvian_amazon: "🇵🇪 Peruvian Amazon – Rainforest adventure.",
+      bolivia: "🇧🇴 Bolivia – Salt flats & highlands.",
+      paraguay: "🇵🇾 Paraguay – Rivers & culture.",
+      uruguay: "🇺🇾 Uruguay – Coast & colonial cities."
+    };
+
+    const questions = [
+      { q: "What kind of vacation do you prefer?", options:["Mountains","Beaches","Cultural heritage","Urban adventure"] },
+      { q: "Pick your favorite vibe:", options:["Relaxed","Adventurous","Spiritual","Festive"] },
+      { q: "Choose your dream meal:", options:["Pasta or Pizza","Curry & spices","Fresh seafood","Street food"] },
+      { q: "What activity excites you most?", options:["Trekking","Diving","Museum hopping","Temple visits"] },
+      { q: "Pick a season:", options:["Winter","Summer","Spring","Monsoon"] }
+    ];
+
+    const scoreMap = {
+      Mountains:["switzerland","nepal","bolivia","new_zealand","austria","norway","canada","peruvian_amazon","tanzania","uganda"],
+      Beaches:["bali","australia","goa","thailand","andaman","cuba","jamaica","dominican_republic","costarica","panama"],
+      "Cultural heritage":["italy","egypt","greece","turkey","mexico","india=","china","peru","morocco","iran"],
+      "Urban adventure":["usa","japan","mumbai","france","canada","uk","russia","brazil","mexico","uae"],
+      Relaxed:["kerala","bali","greece","canada","australia","spain","costa_rica","jamaica","belize","uruguay"],
+      Adventurous:["nepal","new_zealand","south_africa","canada","australia","tanzania","bolivia","norway","ugand","austria"],
+      Spiritual:["varanasi","sikkim","nepal","egypt","india=","iran","ethiopia","indonesia","tibet","bhutan"],
+      Festive:["brazil","kolkata","mexico","italy","barcelona","india=","china","russia","jamaica","dominica"],
+      "Pasta or Pizza":["italy","france","usa","canada","brazil"],
+      "Curry & spices":["india=","thailand","mexico","egypt","ethiopia"],
+      "Fresh seafood":["japan","goa","bali","thailand","costa_rica"],
+      "Street food":["vietnam","kolkata","thailand","mexico","morocco"],
+      Trekking:["nepal","ladakh","new_zealand","canada","tanzania"],
+      Diving:["andaman","bali","australia","egypt","costa_rica"],
+      "Museum hopping":["france","italy","japan","usa","russia"],
+      "Temple visits":["sikkim","tamil_nadu","japan","thailand","egypt"],
+      Winter:["switzerland","canada","norway","russia","finland"],
+      Summer:["greece","bali","goa","spain","costa_rica"],
+      Spring:["japan","nepal","france","italy","egypt"],
+      Monsoon:["kerala","meghalaya","costa_rica","panama","guatemala"]
+    };
+
+    let current=0, userChoices=[];
+
+    const quiz=document.getElementById('quiz'),
+          result=document.getElementById('result'),
+          ticket=document.getElementById('ticket'),
+          progress=document.getElementById('progress');
+
+    function showQuestion(){
+      const {q, options} = questions[current];
+      progress.textContent = `Question ${current+1} of ${questions.length}`;
+      quiz.innerHTML = `
+        <div class="question"><h2>${q}</h2>
+          <div class="options">
+            ${options.map(o=>`<button onclick="selectOption('${o}')">${o}</button>`).join('')}
+          </div></div>`;
+    }
+
+    function selectOption(val){
+      userChoices.push(val);
+      current++;
+      if(current<questions.length) showQuestion();
+      else showResult();
+    }
+
+    function showResult(){
+      const freq= {};
+      new Set(userChoices).forEach(choice=>{
+        (scoreMap[choice]||[]).forEach(dest=>{
+          freq[dest] = (freq[dest]||0) + 1;
+        });
+      });
+      const best = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+      const summary= locations[best] || "🌍 Explore the world your way!";
+      result.textContent = summary;
+      quiz.innerHTML = "";
+      ticket.style.display = "block";
+      ticket.innerHTML = `
+        ✈️ Travel Ticket ✈️<br><br>
+        Traveler: You<br>
+        Destination: ${summary}<br>
+        Class: Adventure<br>
+        Date: ${new Date().toLocaleDateString()}<br>
+        Seat: ${Math.floor(Math.random()*30)+1}A`;
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
